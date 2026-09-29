@@ -32,6 +32,7 @@ const PROVIDER_META: { id: LLMProvider; name: string }[] = [
   { id: "cursor", name: "Cursor" },
   { id: "opencode", name: "OpenCode" },
   { id: "kimi", name: "Kimi Code" },
+  { id: "antigravity", name: "Antigravity" },
 ];
 
 const MOD_KEY =
@@ -80,6 +81,7 @@ function getProviderDisplayName(p: LLMProvider) {
   if (p === "codex") return "Codex";
   if (p === "opencode") return "OpenCode";
   if (p === "kimi") return "Kimi Code";
+  if (p === "antigravity") return "Antigravity";
   return "Claude";
 }
 
@@ -315,6 +317,10 @@ export default function ProviderSelectionEmptyState({
                 kimi: t("providerSelection.readyPrompt.kimi", {
                   model: providerModels.kimi,
                   defaultValue: "Ready with Kimi Code {{model}}",
+                }),
+                antigravity: t("providerSelection.readyPrompt.antigravity", {
+                  model: providerModels.antigravity,
+                  defaultValue: "Ready with Antigravity {{model}}",
                 }),
               }[provider]
             }

@@ -215,4 +215,5 @@ export const PROVIDER_LABELS: Record<LLMProvider, string> = {
   cursor: 'Cursor',
   opencode: 'OpenCode',
   kimi: 'Kimi Code',
+  antigravity: 'Antigravity',
 };

@@ -19,7 +19,8 @@
     "cursor": "Cursor",
     "codex": "Codex",
     "opencode": "OpenCode",
-    "kimi": "Kimi Code"
+    "kimi": "Kimi Code",
+    "antigravity": "Antigravity"
   },
   "tools": {
     "settings": "Paramètres de l'outil",
@@ -130,6 +131,7 @@
       "codex": "Prêt à utiliser Codex avec {{model}}. Commencez à taper votre message ci-dessous.",
       "opencode": "Prêt à utiliser OpenCode avec {{model}}. Commencez à taper votre message ci-dessous.",
       "kimi": "Prêt à utiliser Kimi Code avec {{model}}. Commencez à taper votre message ci-dessous.",
+      "antigravity": "Prêt à utiliser Antigravity avec {{model}}. Commencez à taper votre message ci-dessous.",
       "default": "Sélectionnez un fournisseur ci-dessus pour commencer"
     },
     "pressToSearch": "Appuyez sur <kbd>{{shortcut}}</kbd> pour rechercher sessions, fichiers et commits"

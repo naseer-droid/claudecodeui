@@ -63,6 +63,11 @@ const getProviderCommand = ({
     return 'kimi login';
   }
 
+  // agy has no login subcommand; its first interactive start signs in with Google.
+  if (provider === 'antigravity') {
+    return 'agy';
+  }
+
   return 'claude --dangerously-skip-permissions /login';
 };
 
@@ -72,6 +77,7 @@ const getProviderTitle = (provider: LLMProvider) => {
   if (provider === 'codex') return 'Codex CLI Login';
   if (provider === 'opencode') return 'OpenCode CLI Login';
   if (provider === 'kimi') return 'Kimi Code CLI Login';
+  if (provider === 'antigravity') return 'Antigravity CLI Login';
   return 'Claude CLI Login';
 };
 

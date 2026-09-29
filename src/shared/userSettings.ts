@@ -26,6 +26,7 @@ export type UserPreferences = {
   codexPermissions: unknown;
   opencodePermissions: unknown;
   kimiPermissions: unknown;
+  antigravityPermissions: unknown;
   codeEditorSettings: unknown;
   uiPreferences: unknown;
   selectedProvider: string;
@@ -64,6 +65,7 @@ const LEGACY_STORAGE_KEYS: Record<UserPreferenceKey, string> = {
   codexPermissions: 'codex-settings',
   opencodePermissions: 'opencode-settings',
   kimiPermissions: 'kimi-settings',
+  antigravityPermissions: 'antigravity-settings',
   // Unused: the four code-editor settings never shared one key, so they are
   // read by readLegacyCodeEditorSettings instead.
   codeEditorSettings: '',

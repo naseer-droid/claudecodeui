@@ -1,4 +1,5 @@
 import type { LLMProvider } from '@/shared/types';
+import AntigravityLogo from '@/shared/ui/AntigravityLogo';
 import ClaudeLogo from '@/shared/ui/ClaudeLogo';
 import CodexLogo from '@/shared/ui/CodexLogo';
 import CursorLogo from '@/shared/ui/CursorLogo';
@@ -29,6 +30,10 @@ export function LLMProviderLogo({
 
   if (provider === 'kimi') {
     return <KimiLogo className={className} />;
+  }
+
+  if (provider === 'antigravity') {
+    return <AntigravityLogo className={className} />;
   }
 
   return <ClaudeLogo className={className} />;

@@ -356,6 +356,9 @@
       },
       "kimi": {
         "description": "Assistant CLI Kimi Code"
+      },
+      "antigravity": {
+        "description": "Assistant CLI Google Antigravity"
       }
     },
     "connectionStatus": "Statut de la connexion",
@@ -452,7 +455,8 @@
       "cursor": "Les serveurs Model Context Protocol fournissent des outils et sources de données supplémentaires à Cursor",
       "codex": "Les serveurs Model Context Protocol fournissent des outils et sources de données supplémentaires à Codex",
       "opencode": "Les serveurs Model Context Protocol fournissent des outils et sources de données supplémentaires à OpenCode",
-      "kimi": "Les serveurs Model Context Protocol fournissent des outils et sources de données supplémentaires à Kimi Code"
+      "kimi": "Les serveurs Model Context Protocol fournissent des outils et sources de données supplémentaires à Kimi Code",
+      "antigravity": "Les serveurs Model Context Protocol fournissent des outils et sources de données supplémentaires à Antigravity"
     },
     "addButton": "Ajouter un serveur MCP",
     "empty": "Aucun serveur MCP configuré",
