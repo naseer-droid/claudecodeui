@@ -15,6 +15,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   codex: 'Codex',
   cursor: 'Cursor',
   opencode: 'OpenCode',
+  kimi: 'Kimi Code',
 };
 
 /** Fenced blocks need a longer fence than anything they contain. */

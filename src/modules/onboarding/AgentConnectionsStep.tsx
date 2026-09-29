@@ -37,6 +37,13 @@ const providerCards = [
     iconContainerClassName: 'bg-zinc-100 dark:bg-zinc-800',
     loginButtonClassName: 'bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600',
   },
+  {
+    provider: 'kimi' as const,
+    title: 'Kimi Code',
+    connectedClassName: 'bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-800',
+    iconContainerClassName: 'bg-sky-100 dark:bg-sky-900/30',
+    loginButtonClassName: 'bg-sky-600 hover:bg-sky-700 dark:bg-sky-600 dark:hover:bg-sky-500',
+  },
 ];
 
 /** Rendered by Onboarding as its second step, listing every CLI provider the user can log into. */

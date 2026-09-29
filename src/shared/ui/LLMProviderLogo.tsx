@@ -2,6 +2,7 @@ import type { LLMProvider } from '@/shared/types';
 import ClaudeLogo from '@/shared/ui/ClaudeLogo';
 import CodexLogo from '@/shared/ui/CodexLogo';
 import CursorLogo from '@/shared/ui/CursorLogo';
+import KimiLogo from '@/shared/ui/KimiLogo';
 import OpenCodeLogo from '@/shared/ui/OpenCodeLogo';
 
 type LLMProviderLogoProps = {
@@ -24,6 +25,10 @@ export function LLMProviderLogo({
 
   if (provider === 'opencode') {
     return <OpenCodeLogo className={className} />;
+  }
+
+  if (provider === 'kimi') {
+    return <KimiLogo className={className} />;
   }
 
   return <ClaudeLogo className={className} />;

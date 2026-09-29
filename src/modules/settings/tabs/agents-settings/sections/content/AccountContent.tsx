@@ -54,6 +54,15 @@ const agentConfig: Record<AgentProvider, AgentVisualConfig> = {
     subtextClass: 'text-zinc-700 dark:text-zinc-300',
     buttonClass: 'bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-950 dark:bg-zinc-700 dark:hover:bg-zinc-600',
   },
+  kimi: {
+    name: 'Kimi Code',
+    description: 'Kimi Code CLI assistant',
+    bgClass: 'bg-sky-50 dark:bg-sky-900/20',
+    borderClass: 'border-sky-200 dark:border-sky-800',
+    textClass: 'text-sky-900 dark:text-sky-100',
+    subtextClass: 'text-sky-700 dark:text-sky-300',
+    buttonClass: 'bg-sky-600 hover:bg-sky-700 active:bg-sky-800',
+  },
 };
 
 type SubscriptionOverrideNoticeProps = {
