@@ -515,8 +515,9 @@ export const sessionsService = {
     // Claude, Codex and Kimi history readers parse `jsonl_path` itself, so a page
     // can be sliced from the stat-validated full-transcript cache instead of
     // re-parsing the whole file per request. Cursor and OpenCode read their
-    // messages from elsewhere (store.db / shared SQLite), so that file's stat
-    // says nothing about their history — they stay on the direct path.
+    // messages from elsewhere (store.db / shared SQLite), and Antigravity keeps
+    // jsonl_path null (its conversation spans brain/<id>/ plus a shared index),
+    // so they stay on the direct path.
     const transcriptPath = provider === 'claude' || provider === 'codex' || provider === 'kimi'
       ? session.jsonl_path
       : null;

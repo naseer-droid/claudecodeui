@@ -7,7 +7,7 @@ import chokidar, { type FSWatcher } from 'chokidar';
 import { sessionSynchronizerService } from '@/modules/providers/services/session-synchronizer.service.js';
 import { broadcastSessionUpsertedBatch } from '@/modules/websocket/index.js';
 import type { LLMProvider } from '@/shared/types.js';
-import { getKimiCodeHomePath } from '@/shared/utils.js';
+import { getAntigravityCliHomePath, getKimiCodeHomePath } from '@/shared/utils.js';
 
 type WatcherEventType = 'add' | 'change';
 
@@ -33,6 +33,11 @@ const PROVIDER_WATCH_PATHS: Array<{ provider: LLMProvider; rootPath: string }> =
     // so watching the sessions tree catches new and resumed Kimi sessions.
     provider: 'kimi',
     rootPath: path.join(getKimiCodeHomePath(), 'sessions'),
+  },
+  {
+    // Each turn rewrites brain/<id>/.system_generated/logs/transcript*.jsonl.
+    provider: 'antigravity',
+    rootPath: path.join(getAntigravityCliHomePath(), 'brain'),
   },
 ];
 
@@ -81,6 +86,11 @@ function isWatcherTargetFile(provider: LLMProvider, filePath: string): boolean {
   if (provider === 'kimi') {
     const baseName = path.basename(filePath);
     return baseName === 'wire.jsonl' || baseName === 'session_index.jsonl';
+  }
+
+  if (provider === 'antigravity') {
+    const baseName = path.basename(filePath);
+    return baseName === 'transcript_full.jsonl' || baseName === 'transcript.jsonl';
   }
 
   return filePath.endsWith('.jsonl');

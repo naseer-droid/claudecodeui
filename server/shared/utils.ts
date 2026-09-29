@@ -1103,6 +1103,64 @@ export async function readKimiSessionIndexEntries(): Promise<KimiSessionIndexEnt
 }
 
 // ---------------------------
+//----------------- ANTIGRAVITY CLI STORAGE UTILITIES ------------
+/**
+ * Resolves the Antigravity CLI (`agy`) state directory.
+ *
+ * `agy` keeps its conversation index (`conversation_summaries.db`) and one
+ * `brain/<conversationId>/` folder per conversation under
+ * `~/.gemini/antigravity-cli`. `$ANTIGRAVITY_CLI_HOME` overrides it (used by
+ * tests; the CLI itself does not read it). Resolved on every call so tests that
+ * patch `os.homedir()` or the env var see their isolated directory. Used by the
+ * Antigravity sessions reader, synchronizer and the sessions watcher.
+ */
+export function getAntigravityCliHomePath(): string {
+  const override = process.env.ANTIGRAVITY_CLI_HOME?.trim();
+  return override ? path.resolve(override) : path.join(os.homedir(), '.gemini', 'antigravity-cli');
+}
+
+/**
+ * Resolves Antigravity's global customization directory, `~/.gemini/config`.
+ *
+ * `agy` reads user MCP servers from `<dir>/mcp_config.json` and user skills
+ * from `<dir>/skills/<name>/SKILL.md` (agy 1.2.13 built-in docs). Used by the
+ * Antigravity MCP and skills providers.
+ */
+export function getAntigravityConfigPath(): string {
+  return path.join(os.homedir(), '.gemini', 'config');
+}
+
+/**
+ * Returns the on-disk transcript of one Antigravity conversation, or null when
+ * the conversation has none (or the id is not a plain conversation id).
+ *
+ * `agy` writes two copies under `brain/<id>/.system_generated/logs/`:
+ * `transcript_full.jsonl` (tool arguments as real JSON, nothing truncated) and
+ * `transcript.jsonl` (every argument re-encoded as a JSON string, long fields
+ * truncated). The full one is preferred. Used by the Antigravity sessions
+ * reader (history) and synchronizer (skip conversations without a transcript).
+ */
+export async function resolveAntigravityTranscriptPath(conversationId: string): Promise<string | null> {
+  // The id becomes a path segment; reject anything that could leave brain/.
+  if (!/^[A-Za-z0-9_-]+$/.test(conversationId)) {
+    return null;
+  }
+
+  const logsDir = path.join(getAntigravityCliHomePath(), 'brain', conversationId, '.system_generated', 'logs');
+  for (const fileName of ['transcript_full.jsonl', 'transcript.jsonl']) {
+    const candidate = path.join(logsDir, fileName);
+    try {
+      await access(candidate);
+      return candidate;
+    } catch {
+      // Try the next copy.
+    }
+  }
+
+  return null;
+}
+
+// ---------------------------
 //----------------- SAFE DIRECTORY NAME UTILITIES ------------
 /**
  * Validates that a user or provider supplied identifier can safely be treated
