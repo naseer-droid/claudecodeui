@@ -1,0 +1,5 @@
+{"role":"meta","type":"system.version","version":"2.1.1"}
+{"role":"assistant","tool_calls":[{"type":"function","id":"tool_8dbsIXdlCtsk2a7ll0Pf5XP1","function":{"name":"Write","arguments":"{\"path\":\"hi.txt\",\"content\":\"hi\\n\"}"}}]}
+{"role":"tool","tool_call_id":"tool_8dbsIXdlCtsk2a7ll0Pf5XP1","content":"Wrote 3 bytes to hi.txt"}
+{"role":"assistant","content":"done"}
+{"role":"meta","type":"session.resume_hint","session_id":"session_fdc95079-ce6b-408f-ad43-ecbd4828280d","command":"kimi -r session_fdc95079-ce6b-408f-ad43-ecbd4828280d","content":"To resume this session: kimi -r session_fdc95079-ce6b-408f-ad43-ecbd4828280d"}
