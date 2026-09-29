@@ -123,3 +123,52 @@ test('migrations create the provider model index on an install that lacks it', a
     await rm(tempDirectory, { recursive: true, force: true });
   }
 });
+
+test('migrations widen a legacy provider_models CHECK to accept kimi and keep custom rows', async () => {
+  const previousDatabasePath = process.env.DATABASE_PATH;
+  const tempDirectory = await mkdtemp(path.join(os.tmpdir(), 'provider-model-kimi-'));
+  const databasePath = path.join(tempDirectory, 'auth.db');
+
+  closeConnection();
+  process.env.DATABASE_PATH = databasePath;
+  await writeFile(databasePath, '');
+  await initializeDatabase();
+
+  try {
+    const db = getConnection();
+    // Recreate the table exactly as installs before the Kimi provider have it.
+    db.exec('DROP TABLE provider_models');
+    db.exec(`
+      CREATE TABLE provider_models (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        provider TEXT NOT NULL CHECK (provider IN ('claude', 'cursor', 'codex', 'opencode')),
+        model_id TEXT NOT NULL,
+        model_name TEXT NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(provider, model_id)
+      )
+    `);
+    const legacy = providerModelsDb.createCustomProviderModel('codex', { model: 'Legacy', id: 'legacy/model' });
+    assert.throws(() => providerModelsDb.createCustomProviderModel('kimi', { model: 'K', id: 'kimi/x' }));
+
+    runMigrations(db);
+
+    assert.equal(providerModelsDb.findCustomProviderModelByModelId('codex', 'legacy/model')?.recordId, legacy.recordId);
+    const kimi = providerModelsDb.createCustomProviderModel('kimi', { model: 'Kimi Custom', id: 'kimi-code/custom' });
+    assert.equal(kimi.modelId, 'kimi-code/custom');
+
+    // A second run is a no-op once the constraint already lists kimi.
+    runMigrations(db);
+    assert.equal(providerModelsDb.listCustomProviderModels('kimi').length, 1);
+  } finally {
+    closeConnection();
+    if (previousDatabasePath === undefined) {
+      delete process.env.DATABASE_PATH;
+    } else {
+      process.env.DATABASE_PATH = previousDatabasePath;
+    }
+    await rm(tempDirectory, { recursive: true, force: true });
+  }
+});

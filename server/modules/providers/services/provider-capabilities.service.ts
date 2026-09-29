@@ -104,6 +104,26 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     supportsMessageEditing: false,
     supportsSessionForking: false,
   },
+  kimi: {
+    provider: 'kimi',
+    // `kimi -p` (print mode) runs tools without asking, so `default` adds no
+    // flag; `plan` maps to `--plan` and `bypassPermissions` to `--auto`
+    // ("Never Ask"). See resolveKimiPermissionArgs in the Kimi runtime adapter.
+    permissionModes: ['default', 'plan', 'bypassPermissions'],
+    defaultPermissionMode: 'default',
+    // Attachments travel as <images_input>/<files_input> path lists in the
+    // prompt, like Cursor and OpenCode.
+    supportsImages: true,
+    supportsFiles: true,
+    supportsAbort: true,
+    supportsPermissionRequests: false,
+    // Read from the newest `usage.record` row of the session's wire.jsonl.
+    supportsTokenUsage: true,
+    // The CLI has no per-run effort flag (effort lives in config.toml).
+    supportsEffort: false,
+    supportsMessageEditing: false,
+    supportsSessionForking: false,
+  },
 };
 
 /**

@@ -23,6 +23,7 @@ import type {
   AnyRecord,
   ApiSuccessShape,
   AppErrorOptions,
+  KimiSessionIndexEntry,
   NormalizedMessage,
   ProviderCurrentActiveModel,
   ProviderModelsDefinition,
@@ -929,6 +930,69 @@ export function unwrapJsonStringLiteral(value: string): string {
   } catch {
     return value;
   }
+}
+
+// ---------------------------
+//----------------- KIMI CODE SESSION STORAGE UTILITIES ------------
+/**
+ * Resolves the Kimi Code CLI home directory.
+ *
+ * Kimi Code keeps credentials, `config.toml`, `mcp.json`, skills and every
+ * session under one directory: `$KIMI_CODE_HOME` when set, otherwise
+ * `~/.kimi-code`. Resolved on every call (never cached at import time) so tests
+ * that patch `os.homedir()` or the env var see their isolated directory.
+ * Used by every Kimi provider facet and by the sessions watcher.
+ */
+export function getKimiCodeHomePath(): string {
+  const override = process.env.KIMI_CODE_HOME?.trim();
+  return override ? path.resolve(override) : path.join(os.homedir(), '.kimi-code');
+}
+
+/**
+ * Returns the main-agent wire transcript path inside one Kimi session folder.
+ *
+ * Kimi writes each session's event log to `<sessionDir>/agents/main/wire.jsonl`.
+ * It is the file the history reader parses, so the synchronizer also stores it
+ * as the session's `jsonl_path` (one file per session, safe to delete with its
+ * app session). Used by the Kimi sessions reader and synchronizer.
+ */
+export function getKimiWirePath(sessionDir: string): string {
+  return path.join(sessionDir, 'agents', 'main', 'wire.jsonl');
+}
+
+/**
+ * Reads Kimi's `session_index.jsonl` (one `{ sessionId, sessionDir, workDir }`
+ * object per line, oldest first).
+ *
+ * Malformed lines and entries missing any field are skipped; a missing index
+ * yields an empty list. Paths are returned as the CLI wrote them. When a
+ * session id appears twice, the later line wins and moves to the end, so the
+ * list stays ordered oldest-to-newest. Used by the Kimi sessions reader
+ * (history lookup) and synchronizer (sidebar indexing).
+ */
+export async function readKimiSessionIndexEntries(): Promise<KimiSessionIndexEntry[]> {
+  let content: string;
+  try {
+    content = await readFile(path.join(getKimiCodeHomePath(), 'session_index.jsonl'), 'utf8');
+  } catch {
+    return [];
+  }
+
+  const bySessionId = new Map<string, KimiSessionIndexEntry>();
+  for (const line of content.split(/\r?\n/)) {
+    const record = readJsonRecord(line.trim());
+    const sessionId = readOptionalString(record?.sessionId);
+    const sessionDir = readOptionalString(record?.sessionDir);
+    const workDir = readOptionalString(record?.workDir);
+    if (!sessionId || !sessionDir || !workDir) {
+      continue;
+    }
+
+    bySessionId.delete(sessionId);
+    bySessionId.set(sessionId, { sessionId, sessionDir, workDir });
+  }
+
+  return Array.from(bySessionId.values());
 }
 
 // ---------------------------

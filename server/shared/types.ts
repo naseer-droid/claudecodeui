@@ -66,7 +66,7 @@ export type AuthenticatedWebSocketRequest = IncomingMessage & {
  * Use this as the source of truth whenever a function or payload needs to identify
  * a specific LLM integration.
  */
-export type LLMProvider = 'claude' | 'codex' | 'cursor' | 'opencode';
+export type LLMProvider = 'claude' | 'codex' | 'cursor' | 'opencode' | 'kimi';
 
 /**
  * One selectable model row in a provider model catalog.
@@ -482,6 +482,24 @@ export type FetchHistoryResult = {
   offset: number;
   limit: number | null;
   tokenUsage?: unknown;
+};
+
+// ---------------------------
+//----------------- KIMI CODE SESSION STORAGE TYPES ------------
+/**
+ * One row of Kimi Code's `~/.kimi-code/session_index.jsonl`.
+ *
+ * `sessionId` is the provider-native id (`session_<uuid>`) passed back to
+ * `kimi -S`, `sessionDir` is the session's folder (its transcript lives at
+ * `<sessionDir>/agents/main/wire.jsonl`) and `workDir` is the project the CLI
+ * ran in. Paths are kept exactly as the CLI wrote them (Windows may mix `/`
+ * and `\`). Produced by `readKimiSessionIndexEntries` in shared utils and
+ * consumed by the Kimi sessions reader and synchronizer.
+ */
+export type KimiSessionIndexEntry = {
+  sessionId: string;
+  sessionDir: string;
+  workDir: string;
 };
 
 // ---------------------------
