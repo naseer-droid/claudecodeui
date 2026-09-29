@@ -123,6 +123,26 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     supportsMessageEditing: false,
     supportsSessionForking: false,
   },
+  antigravity: {
+    provider: 'antigravity',
+    // Mapped onto agy flags by resolveAntigravityPermissionArgs in the
+    // Antigravity runtime adapter: acceptEdits → `--mode accept-edits`,
+    // plan → `--mode plan`, bypassPermissions → `--dangerously-skip-permissions`.
+    permissionModes: ['default', 'acceptEdits', 'bypassPermissions', 'plan'],
+    defaultPermissionMode: 'default',
+    // Attachments travel as <images_input>/<files_input> path lists in the
+    // prompt, like Cursor, OpenCode and Kimi.
+    supportsImages: true,
+    supportsFiles: true,
+    supportsAbort: true,
+    supportsPermissionRequests: false,
+    // Live only: each agent step's `usage` becomes a token_budget status.
+    // agy's transcripts carry no usage, so the endpoint reports zero.
+    supportsTokenUsage: true,
+    supportsEffort: false,
+    supportsMessageEditing: false,
+    supportsSessionForking: false,
+  },
 };
 
 /**
