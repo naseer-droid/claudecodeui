@@ -106,10 +106,9 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
   },
   kimi: {
     provider: 'kimi',
-    // `kimi -p` (print mode) runs tools without asking, so `default` adds no
-    // flag; `plan` maps to `--plan` and `bypassPermissions` to `--auto`
-    // ("Never Ask"). See resolveKimiPermissionArgs in the Kimi runtime adapter.
-    permissionModes: ['default', 'plan', 'bypassPermissions'],
+    // `kimi -p` (print mode) runs tools without asking and rejects --plan /
+    // --auto / --yolo, so only `default` is offered.
+    permissionModes: ['default'],
     defaultPermissionMode: 'default',
     // Attachments travel as <images_input>/<files_input> path lists in the
     // prompt, like Cursor and OpenCode.
