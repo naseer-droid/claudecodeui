@@ -354,6 +354,9 @@
       },
       "kimi": {
         "description": "Kimi Code CLI 助手"
+      },
+      "antigravity": {
+        "description": "Google Antigravity CLI 助手"
       }
     },
     "connectionStatus": "连接状态",
@@ -450,7 +453,8 @@
       "cursor": "Model Context Protocol 服务器为 Cursor 提供额外的工具和数据源",
       "codex": "Model Context Protocol 服务器为 Codex 提供额外的工具和数据源",
       "opencode": "Model Context Protocol 服务器为 OpenCode 提供额外的工具和数据源",
-      "kimi": "Model Context Protocol 服务器为 Kimi Code 提供额外的工具和数据源"
+      "kimi": "Model Context Protocol 服务器为 Kimi Code 提供额外的工具和数据源",
+      "antigravity": "Model Context Protocol 服务器为 Antigravity 提供额外的工具和数据源"
     },
     "addButton": "添加 MCP 服务器",
     "empty": "未配置 MCP 服务器",

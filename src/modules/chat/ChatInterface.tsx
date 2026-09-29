@@ -399,6 +399,8 @@ function ChatInterface({
             ? t('messageTypes.opencode', { defaultValue: 'OpenCode' })
           : provider === 'kimi'
             ? t('messageTypes.kimi', { defaultValue: 'Kimi Code' })
+          : provider === 'antigravity'
+            ? t('messageTypes.antigravity', { defaultValue: 'Antigravity' })
           : t('messageTypes.claude');
 
   if (!selectedProject) {

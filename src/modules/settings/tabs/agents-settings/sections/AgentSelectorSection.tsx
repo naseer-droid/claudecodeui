@@ -14,6 +14,7 @@ const AGENT_NAMES: Record<AgentProvider, string> = {
   codex: 'Codex',
   opencode: 'OpenCode',
   kimi: 'Kimi Code',
+  antigravity: 'Antigravity',
 };
 
 /** Rendered by AgentsSettingsTab to pick which agent provider the tab is configuring. */
@@ -31,7 +32,8 @@ export default function AgentSelectorSection({
             agent === 'claude' ? 'bg-blue-500' :
             agent === 'cursor' ? 'bg-purple-500' :
             agent === 'opencode' ? 'bg-zinc-500' :
-            agent === 'kimi' ? 'bg-sky-500' : 'bg-foreground/60';
+            agent === 'kimi' ? 'bg-sky-500' :
+            agent === 'antigravity' ? 'bg-indigo-500' : 'bg-foreground/60';
 
           return (
             <Pill

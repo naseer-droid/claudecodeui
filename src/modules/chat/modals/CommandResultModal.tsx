@@ -58,6 +58,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   codex: 'Codex',
   opencode: 'OpenCode',
   kimi: 'Kimi Code',
+  antigravity: 'Antigravity',
 };
 
 const FALLBACK_COMMANDS: CommandEntry[] = [
