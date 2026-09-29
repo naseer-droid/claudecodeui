@@ -172,3 +172,48 @@ test('migrations widen a legacy provider_models CHECK to accept kimi and keep cu
     await rm(tempDirectory, { recursive: true, force: true });
   }
 });
+
+test('migrations widen a kimi-era provider_models CHECK to accept antigravity', async () => {
+  const previousDatabasePath = process.env.DATABASE_PATH;
+  const tempDirectory = await mkdtemp(path.join(os.tmpdir(), 'provider-model-antigravity-'));
+  const databasePath = path.join(tempDirectory, 'auth.db');
+
+  closeConnection();
+  process.env.DATABASE_PATH = databasePath;
+  await writeFile(databasePath, '');
+  await initializeDatabase();
+
+  try {
+    const db = getConnection();
+    // Recreate the table exactly as installs with Kimi but before Antigravity have it.
+    db.exec('DROP TABLE provider_models');
+    db.exec(`
+      CREATE TABLE provider_models (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        provider TEXT NOT NULL CHECK (provider IN ('claude', 'cursor', 'codex', 'opencode', 'kimi')),
+        model_id TEXT NOT NULL,
+        model_name TEXT NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(provider, model_id)
+      )
+    `);
+    const kimi = providerModelsDb.createCustomProviderModel('kimi', { model: 'K', id: 'kimi-code/custom' });
+    assert.throws(() => providerModelsDb.createCustomProviderModel('antigravity', { model: 'G', id: 'gemini-x' }));
+
+    runMigrations(db);
+
+    assert.equal(providerModelsDb.findCustomProviderModelByModelId('kimi', 'kimi-code/custom')?.recordId, kimi.recordId);
+    const antigravity = providerModelsDb.createCustomProviderModel('antigravity', { model: 'Gemini X', id: 'gemini-x' });
+    assert.equal(antigravity.modelId, 'gemini-x');
+  } finally {
+    closeConnection();
+    if (previousDatabasePath === undefined) {
+      delete process.env.DATABASE_PATH;
+    } else {
+      process.env.DATABASE_PATH = previousDatabasePath;
+    }
+    await rm(tempDirectory, { recursive: true, force: true });
+  }
+});

@@ -459,7 +459,7 @@ const addSessionEffortColumn = (db: Database): void => {
 
 /**
  * Rebuilds `provider_models` when its provider CHECK constraint predates a
- * provider that was added later (today: `kimi`).
+ * provider that was added later (today: `kimi` and `antigravity`).
  *
  * SQLite cannot alter a CHECK constraint in place, so an existing table whose
  * stored DDL lacks the new id is copied into a fresh table created from the
@@ -470,11 +470,12 @@ const rebuildProviderModelsTableForNewProviders = (db: Database): void => {
   const row = db
     .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'provider_models'")
     .get() as { sql?: string } | undefined;
-  if (!row?.sql || row.sql.includes("'kimi'")) {
+  // Keyed on the newest provider id: any table missing it predates it.
+  if (!row?.sql || row.sql.includes("'antigravity'")) {
     return;
   }
 
-  console.log('Running migration: Rebuilding provider_models to accept the kimi provider');
+  console.log('Running migration: Rebuilding provider_models to accept newly added providers');
   db.exec('PRAGMA foreign_keys = OFF');
   try {
     db.exec('BEGIN TRANSACTION');

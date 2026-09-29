@@ -442,6 +442,12 @@ export function createProviderTokenUsageService(
         return readOpenCodeTokenUsage(databasePath, providerSessionId);
       }
 
+      if (session.provider === 'antigravity') {
+        // agy reports usage only on its live stream (surfaced as token_budget
+        // status events); its on-disk transcripts carry none.
+        return { used: 0, inputTokens: 0, outputTokens: 0, breakdown: { input: 0, output: 0 } };
+      }
+
       if (session.provider === 'kimi') {
         // The synchronizer records each session's wire.jsonl as jsonl_path.
         const wirePath = session.jsonl_path;
