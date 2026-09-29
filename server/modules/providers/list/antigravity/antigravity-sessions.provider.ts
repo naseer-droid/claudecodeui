@@ -103,8 +103,12 @@ const decodeEncodedArgs = (args: AnyRecord): AnyRecord => Object.fromEntries(
 export function parseAntigravityTranscript(
   content: string,
   sessionId: string,
-  options: { argsEncoded?: boolean } = {},
+  options: { argsEncoded?: boolean; conversationId?: string } = {},
 ): NormalizedMessage[] {
+  // Tool ids must equal the live stream's (`readAntigravityToolStepId`:
+  // native conversation id + the tool step's index) or the chat merges the
+  // history row and the live row as two different tools.
+  const conversationId = options.conversationId ?? sessionId;
   const messages: NormalizedMessage[] = [];
   const pendingToolCalls: NormalizedMessage[] = [];
 
@@ -172,7 +176,8 @@ export function parseAntigravityTranscript(
       toolCalls.forEach((toolCall, callIndex) => {
         const call = readObjectRecord(toolCall);
         const rawArgs = readObjectRecord(call?.args) ?? {};
-        const toolId = `agy_${sessionId}_${stepIndex}_${callIndex}`;
+        // Each call's result is its own step right after the planner step.
+        const toolId = `agy_${conversationId}_${stepIndex + 1 + callIndex}`;
         const toolMessage = createNormalizedMessage({
           id: toolId,
           sessionId,
@@ -358,6 +363,7 @@ export class AntigravitySessionsProvider implements IProviderSessions {
       const content = await readFile(transcriptPath, 'utf8');
       const messages = parseAntigravityTranscript(content, sessionId, {
         argsEncoded: path.basename(transcriptPath) === 'transcript.jsonl',
+        conversationId: providerSessionId,
       });
       const normalizedOffset = Math.max(0, offset);
       const normalizedLimit = limit === null ? null : Math.max(0, limit);

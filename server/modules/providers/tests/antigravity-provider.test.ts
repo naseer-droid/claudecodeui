@@ -23,6 +23,7 @@ import {
 import {
   AntigravitySessionsProvider,
   parseAntigravityTranscript,
+  readAntigravityToolStepId,
 } from '@/modules/providers/list/antigravity/antigravity-sessions.provider.js';
 import type { NormalizedMessage, ProviderRuntimeContext } from '@/shared/types.js';
 
@@ -553,4 +554,20 @@ test('antigravityRuntime falls back to stderr when a failed run printed no resul
 
 test('antigravityRuntime.abort returns false for an unknown session', () => {
   assert.equal(antigravityRuntime.abort('no-such-session'), false);
+});
+
+test('history tool ids equal the live stream tool ids, so the chat does not show a tool twice', async () => {
+  const conversationId = 'a35fd2c3-77f5-4b08-a9dc-32af1569d8f6';
+  const liveToolIds = new Set(
+    (await readFixture('stream-write-turn.jsonl'))
+      .split(/\r?\n/)
+      .filter((line) => line.trim())
+      .map((line) => readAntigravityToolStepId(JSON.parse(line)))
+      .filter((id): id is string => Boolean(id)),
+  );
+  const history = parseAntigravityTranscript(await readFixture('transcript_full.jsonl'), 'app-1', { conversationId });
+  const historyToolIds = history.filter((message) => message.kind === 'tool_use').map((message) => message.toolId);
+
+  assert.equal(liveToolIds.size, 1);
+  assert.deepEqual(historyToolIds, [...liveToolIds]);
 });
