@@ -24,19 +24,13 @@ const activeKimiProcesses = new Map<string, KimiChildProcess>();
 /**
  * Maps the UI permission mode onto `kimi` flags (kimi 2.1.1).
  *
- * Print mode (`-p`) already runs tools without asking, so `default` adds
- * nothing; `plan` starts in plan mode and `bypassPermissions` selects the
- * CLI's "Never Ask" mode. Exported for tests.
+ * Print mode (`-p`) already runs tools without asking, and the CLI rejects
+ * `-p` combined with `--plan`, `--auto` or `--yolo` ("Cannot combine --prompt
+ * with --plan", verified 2026-09-29), so every mode adds nothing. Exported for
+ * tests.
  */
-export function resolveKimiPermissionArgs(permissionMode: unknown): string[] {
-  switch (permissionMode) {
-    case 'plan':
-      return ['--plan'];
-    case 'bypassPermissions':
-      return ['--auto'];
-    default:
-      return [];
-  }
+export function resolveKimiPermissionArgs(_permissionMode: unknown): string[] {
+  return [];
 }
 
 /**
