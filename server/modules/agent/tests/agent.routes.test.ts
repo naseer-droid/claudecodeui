@@ -51,6 +51,7 @@ function createDependencies(
     queryCursor: unexpectedProviderCall as AgentDependencies['queryCursor'],
     queryCodex: unexpectedProviderCall as AgentDependencies['queryCodex'],
     queryOpenCode: unexpectedProviderCall as AgentDependencies['queryOpenCode'],
+    queryKimi: unexpectedProviderCall as AgentDependencies['queryKimi'],
     GithubClient: class {} as unknown as AgentDependencies['GithubClient'],
     ...overrides,
   };

@@ -212,6 +212,13 @@ function buildShellCommand(
     return initialCommand || 'opencode';
   }
 
+  if (provider === 'kimi') {
+    if (resumeSessionId) {
+      return `kimi -S "${resumeSessionId}"`;
+    }
+    return initialCommand || 'kimi';
+  }
+
   // Launching with the flag is what unlocks "bypass permissions" in the CLI's
   // shift+tab permission-mode cycle; it cannot be enabled from inside a
   // session started without it.
@@ -538,6 +545,8 @@ export function handleShellConnection(
                 ? 'Codex'
                 : provider === 'opencode'
                     ? 'OpenCode'
+                    : provider === 'kimi'
+                      ? 'Kimi Code'
                   : 'Claude';
           welcomeMsg = hasSession && resumeSessionId
             ? `\x1b[36mResuming ${providerName} session ${resumeSessionId} in: ${projectPath}\x1b[0m\r\n`

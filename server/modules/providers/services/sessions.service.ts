@@ -512,12 +512,12 @@ export const sessionsService = {
     const requestedLimit = options.limit ?? null;
     const requestedOffset = options.offset ?? 0;
 
-    // Claude and Codex history readers parse `jsonl_path` itself, so a page
+    // Claude, Codex and Kimi history readers parse `jsonl_path` itself, so a page
     // can be sliced from the stat-validated full-transcript cache instead of
     // re-parsing the whole file per request. Cursor and OpenCode read their
     // messages from elsewhere (store.db / shared SQLite), so that file's stat
     // says nothing about their history — they stay on the direct path.
-    const transcriptPath = provider === 'claude' || provider === 'codex'
+    const transcriptPath = provider === 'claude' || provider === 'codex' || provider === 'kimi'
       ? session.jsonl_path
       : null;
     const fullHistory = await sessionHistoryCache.getFullHistory({

@@ -7,6 +7,7 @@ import chokidar, { type FSWatcher } from 'chokidar';
 import { sessionSynchronizerService } from '@/modules/providers/services/session-synchronizer.service.js';
 import { broadcastSessionUpsertedBatch } from '@/modules/websocket/index.js';
 import type { LLMProvider } from '@/shared/types.js';
+import { getKimiCodeHomePath } from '@/shared/utils.js';
 
 type WatcherEventType = 'add' | 'change';
 
@@ -26,6 +27,12 @@ const PROVIDER_WATCH_PATHS: Array<{ provider: LLMProvider; rootPath: string }> =
   {
     provider: 'opencode',
     rootPath: path.join(os.homedir(), '.local', 'share', 'opencode'),
+  },
+  {
+    // Each turn appends to <sessions>/<workdir>/<session>/agents/main/wire.jsonl,
+    // so watching the sessions tree catches new and resumed Kimi sessions.
+    provider: 'kimi',
+    rootPath: path.join(getKimiCodeHomePath(), 'sessions'),
   },
 ];
 
@@ -69,6 +76,11 @@ let watcherRescheduleAfterRefresh = false;
 function isWatcherTargetFile(provider: LLMProvider, filePath: string): boolean {
   if (provider === 'opencode') {
     return path.basename(filePath) === 'opencode.db';
+  }
+
+  if (provider === 'kimi') {
+    const baseName = path.basename(filePath);
+    return baseName === 'wire.jsonl' || baseName === 'session_index.jsonl';
   }
 
   return filePath.endsWith('.jsonl');

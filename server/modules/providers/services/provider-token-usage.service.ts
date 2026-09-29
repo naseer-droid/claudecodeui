@@ -171,6 +171,43 @@ function findCodexTokenUsage(fileContent: string): TokenUsageResult | null {
   return null;
 }
 
+/**
+ * Newest `usage.record` row in a Kimi wire.jsonl, or null when it has none.
+ *
+ * Each row is one model request, so its fresh + cached input is what the
+ * context window currently holds (summing rows would recount the prefix).
+ */
+function findKimiTokenUsage(fileContent: string): TokenUsageResult | null {
+  const lines = fileContent.trim().split(/\r?\n/);
+
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    try {
+      const entry = JSON.parse(lines[index]) as AnyRecord;
+      if (entry.type !== 'usage.record' || !entry.usage) {
+        continue;
+      }
+
+      const cacheReadTokens = readUsageNumber(entry.usage.inputCacheRead);
+      const cacheCreationTokens = readUsageNumber(entry.usage.inputCacheCreation);
+      const inputTokens = readUsageNumber(entry.usage.inputOther) + cacheReadTokens + cacheCreationTokens;
+      const outputTokens = readUsageNumber(entry.usage.output);
+      return {
+        used: inputTokens + outputTokens,
+        inputTokens,
+        outputTokens,
+        cacheReadTokens,
+        cacheCreationTokens,
+        cacheTokens: cacheReadTokens + cacheCreationTokens,
+        breakdown: { input: inputTokens, output: outputTokens },
+      };
+    } catch {
+      // Kimi may be writing the last JSONL line while this read happens.
+    }
+  }
+
+  return null;
+}
+
 function emptyCodexTokenUsage(): TokenUsageResult {
   return {
     used: 0,
@@ -403,6 +440,26 @@ export function createProviderTokenUsageService(
         }
 
         return readOpenCodeTokenUsage(databasePath, providerSessionId);
+      }
+
+      if (session.provider === 'kimi') {
+        // The synchronizer records each session's wire.jsonl as jsonl_path.
+        const wirePath = session.jsonl_path;
+        if (!wirePath || !dependencies.fileExists(wirePath)) {
+          throw new AppError(`Kimi session file for "${sessionId}" was not found.`, {
+            code: 'KIMI_SESSION_FILE_NOT_FOUND',
+            statusCode: 404,
+          });
+        }
+
+        const tail = await dependencies.readTextFileTail(wirePath, TOKEN_USAGE_TAIL_BYTES);
+        const tailUsage = findKimiTokenUsage(tail.content);
+        if (tailUsage || tail.isComplete) {
+          return tailUsage ?? { used: 0, inputTokens: 0, outputTokens: 0, breakdown: { input: 0, output: 0 } };
+        }
+
+        return findKimiTokenUsage(await dependencies.readTextFile(wirePath))
+          ?? { used: 0, inputTokens: 0, outputTokens: 0, breakdown: { input: 0, output: 0 } };
       }
 
       if (session.provider === 'codex') {
