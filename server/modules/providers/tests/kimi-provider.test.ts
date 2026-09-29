@@ -236,9 +236,10 @@ test('buildKimiArgs and resolveKimiPermissionArgs produce the headless CLI invoc
   assert.deepEqual(buildKimiArgs({ prompt: 'Hi' }), ['-p', 'Hi', '--output-format', 'stream-json']);
   assert.deepEqual(
     buildKimiArgs({ prompt: 'Hi', providerSessionId: FIXTURE_SESSION_ID, model: 'kimi-code/k3', permissionMode: 'plan' }),
-    ['-p', 'Hi', '--output-format', 'stream-json', '-S', FIXTURE_SESSION_ID, '-m', 'kimi-code/k3', '--plan'],
+    ['-p', 'Hi', '--output-format', 'stream-json', '-S', FIXTURE_SESSION_ID, '-m', 'kimi-code/k3'],
   );
-  assert.deepEqual(resolveKimiPermissionArgs('bypassPermissions'), ['--auto']);
+  assert.deepEqual(resolveKimiPermissionArgs('plan'), []);
+  assert.deepEqual(resolveKimiPermissionArgs('bypassPermissions'), []);
   assert.deepEqual(resolveKimiPermissionArgs('default'), []);
   assert.deepEqual(resolveKimiPermissionArgs(undefined), []);
 });
