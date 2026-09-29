@@ -34,13 +34,13 @@ export default function AgentsSettingsTab({
   const [selectedAgent, setSelectedAgent] = useState<AgentProvider>('claude');
   const [selectedCategory, setSelectedCategory] = useState<AgentCategory>('account');
   const visibleCategories = useMemo<AgentCategory[]>(() => (
-    selectedAgent === 'opencode' || selectedAgent === 'kimi'
+    selectedAgent === 'opencode' || selectedAgent === 'kimi' || selectedAgent === 'antigravity'
       ? ['account', 'permissions', 'mcp']
       : ['account', 'permissions', 'mcp', 'skills']
   ), [selectedAgent]);
 
   const visibleAgents = useMemo<AgentProvider[]>(() => {
-    return ['claude', 'cursor', 'codex', 'opencode', 'kimi'];
+    return ['claude', 'cursor', 'codex', 'opencode', 'kimi', 'antigravity'];
   }, []);
 
   const agentContextById = useMemo<AgentContextByProvider>(() => ({
@@ -64,6 +64,10 @@ export default function AgentsSettingsTab({
       authStatus: providerAuthStatus.kimi,
       onLogin: () => onProviderLogin('kimi'),
     },
+    antigravity: {
+      authStatus: providerAuthStatus.antigravity,
+      onLogin: () => onProviderLogin('antigravity'),
+    },
   }), [
     onProviderLogin,
     providerAuthStatus.claude,
@@ -71,6 +75,7 @@ export default function AgentsSettingsTab({
     providerAuthStatus.cursor,
     providerAuthStatus.opencode,
     providerAuthStatus.kimi,
+    providerAuthStatus.antigravity,
   ]);
 
   useEffect(() => {

@@ -8,7 +8,7 @@ import type {
   ProviderAuthSubscriptionOverride,
 } from '@/shared/types';
 
-const CLI_PROVIDERS: LLMProvider[] = ['claude', 'cursor', 'codex', 'opencode', 'kimi'];
+const CLI_PROVIDERS: LLMProvider[] = ['claude', 'cursor', 'codex', 'opencode', 'kimi', 'antigravity'];
 
 const createInitialProviderAuthStatusMap = (loading = true): ProviderAuthStatusMap => ({
   claude: { authenticated: false, email: null, method: null, error: null, loading },
@@ -16,6 +16,7 @@ const createInitialProviderAuthStatusMap = (loading = true): ProviderAuthStatusM
   codex: { authenticated: false, email: null, method: null, error: null, loading },
   opencode: { authenticated: false, email: null, method: null, error: null, loading },
   kimi: { authenticated: false, email: null, method: null, error: null, loading },
+  antigravity: { authenticated: false, email: null, method: null, error: null, loading },
 });
 
 type ProviderAuthStatusPayload = {
