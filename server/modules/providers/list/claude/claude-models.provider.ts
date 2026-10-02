@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 
 import { sessionsDb } from '@/modules/database/index.js';
+import { listClaudeProfileModelOptions } from '@/modules/providers/list/claude/claude-profiles.js';
 import type { IProviderModels } from '@/shared/interfaces.js';
 import type {
   ProviderCurrentActiveModel,
@@ -289,7 +290,10 @@ export class ClaudeProviderModels implements IProviderModels {
     // const supportedModels = await queryInstance.supportedModels();
     // queryInstance.close();
     // return buildClaudeModelsDefinition(supportedModels);
-    return CLAUDE_PREDEFINED_MODELS;
+    const profileOptions = listClaudeProfileModelOptions();
+    return profileOptions.length === 0
+      ? CLAUDE_PREDEFINED_MODELS
+      : { ...CLAUDE_PREDEFINED_MODELS, OPTIONS: [...CLAUDE_PREDEFINED_MODELS.OPTIONS, ...profileOptions] };
   }
 
   async getCurrentActiveModel(sessionId?: string): Promise<ProviderCurrentActiveModel> {
