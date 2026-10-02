@@ -6,6 +6,8 @@ import test from 'node:test';
 
 import { ClaudeProviderModels } from '@/modules/providers/list/claude/claude-models.provider.js';
 import {
+  fetchClaudeProfileModels,
+  getClaudeProfileModelsUrls,
   listClaudeProfileModelOptions,
   parseClaudeProfile,
   resetClaudeProfilesCache,
@@ -52,17 +54,46 @@ test('profiles without a key or a model are not offered', () => {
   assert.deepEqual(parsed?.models, ['k3', 'kimi-for-coding']);
 });
 
-test('profile models are appended to the Claude catalog', async () => {
-  await withProfilesDir({ 'kimi.json': KIMI_PROFILE, 'api.json': { env: { ANTHROPIC_API_KEY: '' } }, 'notes.txt': 'x' }, async () => {
-    assert.deepEqual(
-      listClaudeProfileModelOptions().map((option) => option.value),
-      ['profile:kimi:k3', 'profile:kimi:kimi-for-coding'],
-    );
-    const catalog = await new ClaudeProviderModels().getSupportedModels();
-    assert.ok(catalog.OPTIONS.some((option) => option.value === 'opus'));
-    assert.equal(catalog.OPTIONS.at(-1)?.value, 'profile:kimi:kimi-for-coding');
-    assert.equal(catalog.DEFAULT, 'default');
+test('model lists come from <base>/v1/models, or the root /models behind an /anthropic shim', async () => {
+  assert.deepEqual(getClaudeProfileModelsUrls({ ANTHROPIC_BASE_URL: 'https://api.kimi.com/coding/' }), ['https://api.kimi.com/coding/v1/models']);
+  assert.deepEqual(getClaudeProfileModelsUrls({ ANTHROPIC_BASE_URL: 'https://api.deepseek.com/anthropic' }), [
+    'https://api.deepseek.com/anthropic/v1/models',
+    'https://api.deepseek.com/models',
+  ]);
+  assert.deepEqual(getClaudeProfileModelsUrls({}), ['https://api.anthropic.com/v1/models']);
+
+  const profile = parseClaudeProfile('deepseek', JSON.stringify({ env: { ANTHROPIC_BASE_URL: 'https://api.deepseek.com/anthropic', ANTHROPIC_AUTH_TOKEN: 't', ANTHROPIC_MODEL: 'deepseek-v4-pro' } }));
+  assert.ok(profile);
+  const seen: string[] = [];
+  const models = await fetchClaudeProfileModels(profile, async (url, init) => {
+    seen.push(url);
+    assert.equal(init.headers.authorization, 'Bearer t');
+    return url.endsWith('/anthropic/v1/models')
+      ? { ok: false, json: async () => ({}) }
+      : { ok: true, json: async () => ({ data: [{ id: 'deepseek-flash' }, { id: 'deepseek-v4-pro' }] }) };
   });
+  assert.deepEqual(models, ['deepseek-flash', 'deepseek-v4-pro']);
+  assert.equal(seen.length, 2);
+  assert.equal(await fetchClaudeProfileModels(profile, async () => { throw new Error('offline'); }), null);
+});
+
+test('profile models are appended to the Claude catalog', async () => {
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async () => { throw new Error('offline'); }) as typeof fetch;
+  try {
+    await withProfilesDir({ 'kimi.json': KIMI_PROFILE, 'api.json': { env: { ANTHROPIC_API_KEY: '' } }, 'notes.txt': 'x' }, async () => {
+      assert.deepEqual(
+        (await listClaudeProfileModelOptions()).map((option) => option.value),
+        ['profile:kimi:k3', 'profile:kimi:kimi-for-coding'],
+      );
+      const catalog = await new ClaudeProviderModels().getSupportedModels();
+      assert.ok(catalog.OPTIONS.some((option) => option.value === 'opus'));
+      assert.equal(catalog.OPTIONS.at(-1)?.value, 'profile:kimi:kimi-for-coding');
+      assert.equal(catalog.DEFAULT, 'default');
+    });
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });
 
 test('a profile model overlays its env and passes the real model id', async () => {
