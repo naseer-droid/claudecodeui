@@ -13,7 +13,8 @@ import type { ProviderModelOption } from '@/shared/types.js';
  * files drive the `claude <alias>` terminal switch, so the Claude Code harness
  * can run against Kimi, DeepSeek or a plain Anthropic API key per chat.
  *
- * Each profile model is offered as `profile:<name>:<model>`; the Claude runtime
+ * Models come live from the profile API's model list (cached 10 min), falling
+ * back to the declared `models`. Each profile model is offered as `profile:<name>:<model>`; the Claude runtime
  * overlays the profile env for that turn and passes `<model>` to the SDK.
  */
 
@@ -24,7 +25,10 @@ const CACHE_TTL_MS = 5_000;
 type ClaudeProfile = {
   name: string;
   label: string;
+  /** Declared models: the fallback when the API's model list can't be read. */
   models: string[];
+  /** Optional override for the model-list endpoint. */
+  modelsUrl?: string;
   env: Record<string, string>;
 };
 
@@ -70,7 +74,8 @@ export const parseClaudeProfile = (name: string, raw: string): ClaudeProfile | n
   }
 
   const label = typeof parsed.label === 'string' && parsed.label.trim() ? parsed.label.trim() : name;
-  return { name, label, models, env };
+  const modelsUrl = typeof parsed.modelsUrl === 'string' && parsed.modelsUrl.trim() ? parsed.modelsUrl.trim() : undefined;
+  return { name, label, models, modelsUrl, env };
 };
 
 export const listClaudeProfiles = (): ClaudeProfile[] => {
@@ -100,12 +105,90 @@ export const listClaudeProfiles = (): ClaudeProfile[] => {
   return profiles;
 };
 
-export const listClaudeProfileModelOptions = (): ProviderModelOption[] =>
-  listClaudeProfiles().flatMap((profile) => profile.models.map((model) => ({
+const MODELS_CACHE_TTL_MS = 10 * 60_000;
+const MODELS_FETCH_TIMEOUT_MS = 5_000;
+
+const liveModelsCache = new Map<string, { at: number; models: string[] }>();
+
+/**
+ * Where a profile's API lists its models. Anthropic-style APIs (Anthropic,
+ * Kimi Code) answer `<base>/v1/models`; APIs that only mount an Anthropic
+ * shim under `/anthropic` (DeepSeek) list models on their OpenAI-style root.
+ * Exported for tests.
+ */
+export const getClaudeProfileModelsUrls = (env: Record<string, string>, modelsUrl?: string): string[] => {
+  if (modelsUrl) {
+    return [modelsUrl];
+  }
+
+  const base = (env.ANTHROPIC_BASE_URL?.trim() || 'https://api.anthropic.com').replace(/\/+$/, '');
+  const urls = [`${base}/v1/models`];
+  if (/\/anthropic$/i.test(base)) {
+    urls.push(`${base.replace(/\/anthropic$/i, '')}/models`);
+  }
+  return urls;
+};
+
+type FetchLike = (url: string, init: { headers: Record<string, string>; signal: AbortSignal }) => Promise<{
+  ok: boolean;
+  json(): Promise<unknown>;
+}>;
+
+/** Exported for tests. Returns null when no endpoint answered with a model list. */
+export const fetchClaudeProfileModels = async (
+  profile: ClaudeProfile,
+  fetchImpl: FetchLike = fetch as unknown as FetchLike,
+): Promise<string[] | null> => {
+  const token = profile.env.ANTHROPIC_AUTH_TOKEN?.trim() || profile.env.ANTHROPIC_API_KEY?.trim() || '';
+  // Anthropic wants x-api-key, the others Bearer; each ignores the other header.
+  const headers = { authorization: `Bearer ${token}`, 'x-api-key': token, 'anthropic-version': '2023-06-01' };
+  for (const url of getClaudeProfileModelsUrls(profile.env, profile.modelsUrl)) {
+    try {
+      const response = await fetchImpl(url, { headers, signal: AbortSignal.timeout(MODELS_FETCH_TIMEOUT_MS) });
+      if (!response.ok) {
+        continue;
+      }
+      const body = await response.json() as { data?: { id?: unknown }[] };
+      const ids = (body.data ?? [])
+        .map((entry) => entry?.id)
+        .filter((id): id is string => typeof id === 'string' && id.trim() !== '');
+      if (ids.length > 0) {
+        return ids;
+      }
+    } catch {
+      // Try the next endpoint; the declared models are the fallback.
+    }
+  }
+  return null;
+};
+
+const getProfileModels = async (profile: ClaudeProfile): Promise<string[]> => {
+  const cached = liveModelsCache.get(profile.name);
+  if (cached && Date.now() - cached.at < MODELS_CACHE_TTL_MS) {
+    return cached.models;
+  }
+
+  const live = await fetchClaudeProfileModels(profile);
+  if (!live) {
+    // Keep serving the last good list rather than shrinking to the fallback.
+    return cached?.models ?? profile.models;
+  }
+
+  // The profile's own default model stays first even if the API omits it.
+  const models = [...new Set([...profile.models.slice(0, 1), ...live])];
+  liveModelsCache.set(profile.name, { at: Date.now(), models });
+  return models;
+};
+
+export const listClaudeProfileModelOptions = async (): Promise<ProviderModelOption[]> => {
+  const profiles = listClaudeProfiles();
+  const modelLists = await Promise.all(profiles.map((profile) => getProfileModels(profile)));
+  return profiles.flatMap((profile, index) => modelLists[index].map((model) => ({
     value: `${CLAUDE_PROFILE_MODEL_PREFIX}${profile.name}:${model}`,
     label: `${profile.label} · ${model} (API)`,
     description: `Claude Code on the ${profile.label} API (${profile.env.ANTHROPIC_BASE_URL || 'Anthropic'}), not the subscription.`,
   })));
+};
 
 /**
  * Resolves `profile:<name>:<model>` to the env overlay and the real model id.
@@ -133,4 +216,5 @@ export const resolveClaudeProfileModel = (
 /** Exported for tests. */
 export const resetClaudeProfilesCache = (): void => {
   cache = null;
+  liveModelsCache.clear();
 };

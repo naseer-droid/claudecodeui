@@ -290,7 +290,7 @@ export class ClaudeProviderModels implements IProviderModels {
     // const supportedModels = await queryInstance.supportedModels();
     // queryInstance.close();
     // return buildClaudeModelsDefinition(supportedModels);
-    const profileOptions = listClaudeProfileModelOptions();
+    const profileOptions = await listClaudeProfileModelOptions();
     return profileOptions.length === 0
       ? CLAUDE_PREDEFINED_MODELS
       : { ...CLAUDE_PREDEFINED_MODELS, OPTIONS: [...CLAUDE_PREDEFINED_MODELS.OPTIONS, ...profileOptions] };

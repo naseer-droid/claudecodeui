@@ -945,6 +945,12 @@ async function queryClaudeSDK(command, options = {}, ws, context) {
   let queryInstance = null;
 
   try {
+    // A missing cwd makes Windows report ENOENT for the spawn, which the SDK
+    // misreports as "native binary exists but failed to launch".
+    if (options.cwd && !(await fs.stat(options.cwd).then((stat) => stat.isDirectory(), () => false))) {
+      throw new Error(`Project folder not found: ${options.cwd}. It was moved or renamed; open the project from its current folder.`);
+    }
+
     const resolvedModel = await context.resolveResumeModel(sessionId, options.model);
     let effortModels = CLAUDE_PREDEFINED_MODELS;
     try {
