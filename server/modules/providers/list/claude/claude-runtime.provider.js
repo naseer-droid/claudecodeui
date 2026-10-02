@@ -28,6 +28,7 @@ import {
   CLAUDE_PREDEFINED_MODELS,
   CLAUDE_ULTRACODE_EFFORT
 } from '@/modules/providers/list/claude/claude-models.provider.js';
+import { resolveClaudeProfileModel } from '@/modules/providers/list/claude/claude-profiles.js';
 import { resolveClaudeCodeExecutablePath } from '@/shared/claude-cli-path.js';
 import {
   createNotificationEvent,
@@ -282,8 +283,20 @@ function mapCliOptionsToSDK(options = {}) {
 
   sdkOptions.model = options.model || CLAUDE_PREDEFINED_MODELS.DEFAULT;
 
+  // Fork-only: `profile:<name>:<model>` runs this turn on that profile's API
+  // (~/.claude/profiles). Inherited Anthropic credentials are dropped first so
+  // a key in the server's own env can never win over the profile's.
+  const profileModel = resolveClaudeProfileModel(sdkOptions.model);
+  if (profileModel) {
+    delete sdkOptions.env.ANTHROPIC_API_KEY;
+    delete sdkOptions.env.ANTHROPIC_AUTH_TOKEN;
+    delete sdkOptions.env.ANTHROPIC_BASE_URL;
+    Object.assign(sdkOptions.env, profileModel.env);
+    sdkOptions.model = profileModel.model;
+  }
+
   applyClaudeEffort(sdkOptions, resolveClaudeEffort(
-    sdkOptions.model,
+    options.model || sdkOptions.model,
     effort,
     options.effortModels || CLAUDE_PREDEFINED_MODELS,
   ));
@@ -1609,5 +1622,6 @@ export {
   getPendingApprovalsForSession,
   reconnectSessionWriter,
   extractTokenBudget,
-  extractCumulativeTokenBudget
+  extractCumulativeTokenBudget,
+  mapCliOptionsToSDK
 };
