@@ -314,12 +314,14 @@ test('migrations widen a kimi-era provider_models CHECK to accept antigravity', 
         UNIQUE(provider, model_id)
       )
     `);
-    const kimi = providerModelsDb.createCustomProviderModel('kimi', { model: 'K', id: 'kimi-code/custom' });
+    // Raw insert: the repository writes effort columns this legacy table lacks.
+    db.exec("INSERT INTO provider_models (provider, model_id, model_name) VALUES ('kimi', 'kimi-code/custom', 'K')");
+    const kimiId = (db.prepare("SELECT id FROM provider_models WHERE model_id = 'kimi-code/custom'").get() as { id: number }).id;
     assert.throws(() => providerModelsDb.createCustomProviderModel('antigravity', { model: 'G', id: 'gemini-x' }));
 
     runMigrations(db);
 
-    assert.equal(providerModelsDb.findCustomProviderModelByModelId('kimi', 'kimi-code/custom')?.recordId, kimi.recordId);
+    assert.equal(providerModelsDb.findCustomProviderModelByModelId('kimi', 'kimi-code/custom')?.recordId, kimiId);
     const antigravity = providerModelsDb.createCustomProviderModel('antigravity', { model: 'Gemini X', id: 'gemini-x' });
     assert.equal(antigravity.modelId, 'gemini-x');
   } finally {
