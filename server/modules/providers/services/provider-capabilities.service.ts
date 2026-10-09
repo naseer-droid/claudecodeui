@@ -134,6 +134,7 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     supportsTokenUsage: true,
     // The CLI has no per-run effort flag (effort lives in config.toml).
     supportsEffort: false,
+    effortLevels: [],
     supportsMessageEditing: false,
     supportsSessionForking: false,
   },
@@ -154,6 +155,7 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     // agy's transcripts carry no usage, so the endpoint reports zero.
     supportsTokenUsage: true,
     supportsEffort: false,
+    effortLevels: [],
     supportsMessageEditing: false,
     supportsSessionForking: false,
   },

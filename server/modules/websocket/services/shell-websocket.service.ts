@@ -252,16 +252,16 @@ function buildShellCommand(
 
   if (provider === 'kimi') {
     if (resumeSessionId) {
-      return `kimi -S "${resumeSessionId}"`;
+      return otherProgram(`kimi -S "${resumeSessionId}"`);
     }
-    return initialCommand || 'kimi';
+    return otherProgram(initialCommand || 'kimi');
   }
 
   if (provider === 'antigravity') {
     if (resumeSessionId) {
-      return `agy --conversation "${resumeSessionId}"`;
+      return otherProgram(`agy --conversation "${resumeSessionId}"`);
     }
-    return initialCommand || 'agy';
+    return otherProgram(initialCommand || 'agy');
   }
 
   // Launching with the flag is what unlocks "bypass permissions" in the CLI's

@@ -12,7 +12,8 @@ import type { LLMProvider, ProviderModelsDefinition } from '@/shared/types.js';
  * The full curated catalogs, before OpenCode narrows its list to the upstream
  * providers a machine has connected.
  */
-const CURATED_CATALOGS: Record<LLMProvider, ProviderModelsDefinition> = {
+// Fork: Kimi and Antigravity have no curated catalog (their lists come from the CLI).
+const CURATED_CATALOGS: Partial<Record<LLMProvider, ProviderModelsDefinition>> = {
   claude: CLAUDE_PREDEFINED_MODELS,
   codex: CODEX_PREDEFINED_MODELS,
   cursor: CURSOR_PREDEFINED_MODELS,
