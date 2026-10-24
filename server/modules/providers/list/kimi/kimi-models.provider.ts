@@ -18,14 +18,16 @@ import {
 
 /**
  * Catalog used when `~/.kimi-code/config.toml` is missing or lists no models.
- * These are the aliases a fresh `kimi login` writes (kimi 2.1.1).
+ * These are the aliases a fresh `kimi login` writes (kimi 2.3.1).
  */
 const KIMI_FALLBACK_MODELS: ProviderModelsDefinition = {
   OPTIONS: [
+    { value: 'kimi-code/k3.1-pro', label: 'K3.1 Pro' },
+    { value: 'kimi-code/k3.1-pro-highspeed', label: 'K3.1 Pro Highspeed' },
     { value: 'kimi-code/k3-256k', label: 'K3-256k' },
     { value: 'kimi-code/kimi-for-coding', label: 'Kimi for Coding' },
   ],
-  DEFAULT: 'kimi-code/k3-256k',
+  DEFAULT: 'kimi-code/k3.1-pro',
 };
 
 /**

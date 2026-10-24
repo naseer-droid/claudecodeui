@@ -33,7 +33,7 @@ const FALLBACK_DEFAULT_MODEL: Record<LLMProvider, string> = {
   cursor: 'gpt-5.3-codex',
   codex: 'gpt-5.4',
   opencode: 'anthropic/claude-sonnet-4-5',
-  kimi: 'kimi-code/k3-256k',
+  kimi: 'kimi-code/k3.1-pro',
   antigravity: 'gemini-3.1-pro-high',
 };
 
